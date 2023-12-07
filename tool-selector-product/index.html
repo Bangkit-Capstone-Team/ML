@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>DataTables </title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel=" stylesheet">
+    <!--Replace with your tailwind.css once created-->
+
+
+    <!--Regular Datatables CSS-->
+    <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet">
+    <!--Responsive Extension Datatables CSS-->
+    <link href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.dataTables.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/jcrop/dist/jcrop.css">
+
+    <style>
+        /*Overrides for Tailwind CSS */
+
+        /*Form fields*/
+        .dataTables_wrapper select,
+        .dataTables_wrapper .dataTables_filter input {
+            color: #4a5568;
+            /*text-gray-700*/
+            padding-left: 1rem;
+            /*pl-4*/
+            padding-right: 1rem;
+            /*pl-4*/
+            padding-top: .5rem;
+            /*pl-2*/
+            padding-bottom: .5rem;
+            /*pl-2*/
+            line-height: 1.25;
+            /*leading-tight*/
+            border-width: 2px;
+            /*border-2*/
+            border-radius: .25rem;
+            border-color: #edf2f7;
+            /*border-gray-200*/
+            background-color: #edf2f7;
+            /*bg-gray-200*/
+        }
+
+        /*Row Hover*/
+        table.dataTable.hover tbody tr:hover,
+        table.dataTable.display tbody tr:hover {
+            background-color: #ebf4ff;
+            /*bg-indigo-100*/
+        }
+
+        /*Pagination Buttons*/
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            font-weight: 700;
+            /*font-bold*/
+            border-radius: .25rem;
+            /*rounded*/
+            border: 1px solid transparent;
+            /*border border-transparent*/
+        }
+
+        /*Pagination Buttons - Current selected */
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            color: #fff !important;
+            /*text-white*/
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
+            /*shadow*/
+            font-weight: 700;
+            /*font-bold*/
+            border-radius: .25rem;
+            /*rounded*/
+            background: #667eea !important;
+            /*bg-indigo-500*/
+            border: 1px solid transparent;
+            /*border border-transparent*/
+        }
+
+        /*Pagination Buttons - Hover */
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            color: #fff !important;
+            /*text-white*/
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .1), 0 1px 2px 0 rgba(0, 0, 0, .06);
+            /*shadow*/
+            font-weight: 700;
+            /*font-bold*/
+            border-radius: .25rem;
+            /*rounded*/
+            background: #667eea !important;
+            /*bg-indigo-500*/
+            border: 1px solid transparent;
+            /*border border-transparent*/
+        }
+
+        /*Add padding to bottom border */
+        table.dataTable.no-footer {
+            border-bottom: 1px solid #e2e8f0;
+            /*border-b-1 border-gray-300*/
+            margin-top: 0.75em;
+            margin-bottom: 0.75em;
+        }
+
+        /*Change colour of responsive icon*/
+        table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child:before,
+        table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child:before {
+            background-color: #667eea !important;
+            /*bg-indigo-500*/
+        }
+
+        table.dataTable tbody.tr {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        table.dataTable th[data-priority="4"],
+        table.dataTable td[data-priority="4"] {
+            /* width: 52px; */
+            display: flex;
+            flex-direction: column;
+            /* Ganti 250px dengan lebar yang diinginkan */
+        }
+    </style>
+
+</head>
+
+<body class="bg-gray-100 text-gray-900 tracking-wider leading-normal relative">
+    <!-- pop up -->
+    <div id="pop-up"
+        class="w-full h-screen bg-black bg-opacity-20 border-sm z-50 fixed top-0 left-0 flex justify-center items-center hidden">
+
+        <div class="w-4/5 h-4/5 bg-white rounded relative flex flex-col items-center gap-5">
+            <button id="btn-hide-popup" class="absolute top-5 right-5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x" width="44" height="44"
+                    viewBox="0 0 24 24" stroke-width="1.5" stroke="#2c3e50" fill="none" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M18 6l-12 12" />
+                    <path d="M6 6l12 12" />
+                </svg>
+            </button>
+
+            <img src="" id="editImage" class="mt-10">
+
+            <button id="cropAndSaveButton" class="bg-indigo-300 p-3 text-white rounded">Save Changes</button>
+        </div>
+
+    </div>
+
+    <!--Container-->
+    <div class="container w-full md:w-4/5 mx-auto px-2">
+
+
+        <!--Title-->
+        <h1 class="flex items-center font-sans font-bold break-normal text-indigo-500 px-2 py-8 text-xl md:text-2xl">
+            Tool Selector
+        </h1>
+
+
+        <!--Card-->
+        <div id='recipients' class="p-8 mt-6 lg:mt-0 rounded shadow bg-white">
+
+
+            <table id="example" class="stripe hover" style="width:100%; padding-top: 1em;  padding-bottom: 1em;">
+                <thead>
+                    <tr>
+                        <th data-priority="1">Product</th>
+                        <th data-priority="2">Title</th>
+                        <th data-priority="3">Image</th>
+                        <th data-priority="4">Menu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+
+            </table>
+            <a href=""></a>
+
+        </div>
+        <!--/Card-->
+
+
+    </div>
+    <!--/container-->
+
+    <!-- jQuery -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <!--Datatables -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-jcrop/0.9.15/js/jquery.Jcrop.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+
+            let imagePath;
+
+            $("#btn-hide-popup").on('click', function () {
+                $("#pop-up").addClass("hidden")
+            })
+
+            var table = $('#example').DataTable({
+                responsive: true,
+                ajax: {
+                    url: "get_data.php", // Replace with your PHP script URL
+                    dataSrc: ""
+                },
+                columns: [
+                    { data: "product_name" },
+                    { data: "title" },
+                    {
+                        data: "image",
+                        render: function (data, type, row) {
+                            // Periksa apakah data image tersedia
+                            if (data) {
+                                // Buat tag image dengan src dari data image
+                                let image = `<img width="200px" src="./data/images/${data}" alt="${data}">`;
+                                return image;
+                            } else {
+                                // Jika data image tidak tersedia, tampilkan placeholder
+                                return "";
+                            }
+                        }
+                    },
+                    {
+                        data: "menu",
+                        render: function (data, type, row) {
+                            // Buat tag anchor detail
+                            let anchorDetail = `<a href="${row.link}" target="_blank" class="px-4 py-2 bg-indigo-300 rounded mb-1 text-white">Detail</a>`;
+
+                            // Buat tag anchor hapus
+                            let hapus = `<button data-id="${row.id_product}" class="px-4 py-2 bg-red-300 rounded text-white hapus-button">Hapus</button>`;
+
+                            // Buat tag anchor hapus
+                            let edit = `<button data-id="${row.image}" class="edit-button px-4 py-2 bg-green-300 rounded text-white">Edit</button>`;
+
+                            // Gabungkan tag anchor dalam wrapper flexbox
+                            let menu = `<td class="flex flex-col">${anchorDetail}${hapus}${edit}</td>`;
+
+                            // Kembalikan menu
+                            return menu;
+                        }
+                    }
+                ]
+            });
+
+            $('#example tbody').on('click', '.hapus-button', function () {
+                var id_product = $(this).attr('data-id');
+                // Hapus data dari database
+                $.ajax({
+                    url: 'delete_product.php',
+                    data: {
+                        id_product
+                    },
+                    type: 'POST',
+                    success: function () {
+                        // Refresh tabel
+                        Swal.fire({
+                            toast: true,
+                            icon: "success",
+                            text: "Berhasil hapus!",
+                            position: "top-end",
+                            showConfirmButton: false,
+                            timer: 1000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.onmouseenter = Swal.stopTimer;
+                                toast.onmouseleave = Swal.resumeTimer;
+                            }
+                        });
+                        table.ajax.reload();
+                    },
+                    error: function () {
+                        Swal.fire({
+                            toast: true,
+                            icon: "error",
+                            text: "Gagal menghapus!",
+                            position: "top-end",
+                            showConfirmButton: false,
+                            timer: 1000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.onmouseenter = Swal.stopTimer;
+                                toast.onmouseleave = Swal.resumeTimer;
+                            }
+                        });
+                    }
+                });
+            });
+
+            $('#example tbody').on('click', '.edit-button', function () {
+                const image_src = $(this).attr('data-id');
+                imagePath = `./data/images/${image_src}`; // Ganti dengan path gambar produk yang sesuai
+                $("#pop-up").removeClass("hidden")
+                $('#editImage').attr('src', imagePath);
+
+                // Memunculkan pop-up edit saat tombol Edit diklik
+                $('#editImage').Jcrop({
+                    aspectRatio: 1,
+                    onSelect: updateCoords,
+                });
+            });
+
+            function updateCoords(c) {
+                // Fungsi ini akan memberikan koordinat area yang dipilih
+                console.log('Selected Coordinates:', c);
+            }
+
+            $('#cropAndSaveButton').on('click', function () {
+                const coords = $('#editImage').data('Jcrop').tellSelect();
+                cropAndSaveImage(coords, imagePath);
+            });
+
+            function cropAndSaveImage(coords, imagePath) {
+                // Implementasikan AJAX untuk mengirim koordinat ke server
+                console.log('Sending coordinates to server:', coords);
+                // Implementasikan AJAX di sini, contoh:
+                $.ajax({
+                    url: 'crop.php',
+                    type: 'POST',
+                    data: { coords, imagePath },
+                    success: function (response) {
+                        if (response == "Image cropped and saved successfully") {
+                            // Refresh tabel
+                            Swal.fire({
+                                toast: true,
+                                icon: "success",
+                                text: "Berhasil eedit!",
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 1000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                            table.ajax.reload();
+                            $("#pop-up").addClass("hidden")
+                        } else {
+                            Swal.fire({
+                                toast: true,
+                                icon: "error",
+                                text: "Gagal edit!",
+                                position: "top-end",
+                                showConfirmButton: false,
+                                timer: 1000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.onmouseenter = Swal.stopTimer;
+                                    toast.onmouseleave = Swal.resumeTimer;
+                                }
+                            });
+                        }
+                    },
+                    error: function (error) {
+                        Swal.fire({
+                            toast: true,
+                            icon: "error",
+                            text: "Gagal edit!",
+                            position: "top-end",
+                            showConfirmButton: false,
+                            timer: 1000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.onmouseenter = Swal.stopTimer;
+                                toast.onmouseleave = Swal.resumeTimer;
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Load JSON with PHP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+    <main class="px-8 pt-8">
+        <div id="json-data" class="grid grid-cols-5 gap-5">
+
+        </div>
+    </main>
+
+
+    <script>
+        // Fungsi untuk memuat data JSON menggunakan XMLHttpRequest
+        function loadJSON() {
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    // Menampilkan data JSON di halaman
+                    let jsonData = JSON.parse(xhr.responseText);
+                    displayJSON(jsonData);
+                }
+            };
+            xhr.open("GET", "load_json.php", true);
+            xhr.send();
+        }
+
+        function deleteJSONFile(title) {
+            // Menggunakan fetch untuk mengirim DELETE request
+            fetch(`delete_json.php?title=${title}`, {
+                method: 'DELETE',
+            })
+                .then(async response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        const elementsToDelete = document.querySelectorAll(`[data-title="${title}"]`);
+                        elementsToDelete.forEach(element => {
+                            element.remove();
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error.message);
+                });
+        }
+
+        // Fungsi untuk menampilkan data JSON di halaman
+        function displayJSON(data) {
+            let jsonDataElement = document.getElementById("json-data");
+            let html = "";
+
+            // Menggunakan Object.keys untuk mendapatkan nama properti
+            Object.keys(data.url).forEach(function (key) {
+                // Mengakses nilai untuk setiap properti
+                let item = {
+                    url: data.url[key],
+                    title: data.title[key],
+                    imageSrc: data.imageSrc[key],
+                    filename: data.filename[key]
+                };
+
+                html += `
+                <div class="w-48" data-title="${item.title}">
+                    <div class="relative">
+                        <div class="h-full w-full">
+                        <img src="${item.imageSrc}" />
+                        </div>
+
+                        <!-- actions -->
+                        <div class="absolute right-0 top-0 flex w-full flex-col items-end gap-1 px-2 pt-2">
+                        <button onclick="deleteJSONFile('${item.title}')" class="flex w-fit justify-center bg-red-400 px-1 py-1">
+                            <span class="text-sm text-white">Hapus</span>
+                        </button>
+                        <a target="_blank" href="${item.url}" class="flex w-fit justify-center bg-slate-400 px-1 py-1">
+                            <span class="text-sm text-white">Detail</span>
+                        </a>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <span class="w-full text-center">${item.title}</span>
+                    </div>
+                </div>
+                `;
+            });
+
+            jsonDataElement.innerHTML = html;
+        }
+
+        // Memanggil fungsi untuk memuat data JSON saat halaman dimuat
+        loadJSON();
+    </script>
+
+</body>
+
+</html>

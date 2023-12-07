@@ -1,0 +1,17 @@
+{
+  "name": "tool-crawling",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev:reset": "node reset.js && node run.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "mysql2": "^3.6.5",
+    "puppeteer": "^21.6.0"
+  }
+}
