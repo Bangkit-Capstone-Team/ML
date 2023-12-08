@@ -2,8 +2,8 @@
 
 // Database connection settings
 $servername = "localhost";
-$username = "root";
-$password = "";
+$username = "edoc";
+$password = "edoc123";
 $database = "dataset";
 
 // Create database connection
