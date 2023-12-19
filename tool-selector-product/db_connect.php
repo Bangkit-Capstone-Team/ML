@@ -2,9 +2,14 @@
 
 // Database connection settings
 $servername = "localhost";
-$username = "edoc";
-$password = "edoc123";
+$username = "root";
+$password = "";
 $database = "dataset";
+
+// $servername = "localhost";
+// $username = "edoc";
+// $password = "edoc123";
+// $database = "dataset";
 
 // Create database connection
 $conn = new mysqli($servername, $username, $password, $database);

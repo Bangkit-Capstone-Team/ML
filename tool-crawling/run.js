@@ -9,6 +9,7 @@ const mysql = require("mysql2");
 let browser;
 let page;
 let no = 1;
+let query;
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -101,7 +102,7 @@ const getData = async (card) => {
   let filename;
   if (image_el) {
     console.log(`[+] Download ${image_real}`);
-    filename = `${no}.jpg`;
+    filename = `${query}-${no}.jpg`;
     const imagePath = path.join(`${__dirname}/data`, "images", filename);
     await downloadImage(image_real, imagePath);
     console.log(`[✔] Image saved: data/${filename}`);
@@ -143,10 +144,10 @@ const main = async (state = true) => {
     await setup();
   }
   let resultArray = [];
-  for (let j = 0; j < 5; j++) {
+  for (let j = 5; j < 7; j++) {
     for (let pagination = 1; pagination < 5; pagination++) {
       console.log(`[P] Page ${pagination}`);
-      let query = queries[j];
+      query = queries[j];
       if (pagination == 1) {
         await page.goto(
           `https://www.tokopedia.com/search?st=&q=${encodeURIComponent(query)}`,

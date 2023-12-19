@@ -121,6 +121,16 @@
             flex-direction: column;
             /* Ganti 250px dengan lebar yang diinginkan */
         }
+
+        #imageToEdit {
+            max-width: 100%;
+            height: auto;
+            /* atau setel tinggi tertentu */
+        }
+
+        .jcrop-holder {
+            width: 100%;
+        }
     </style>
 
 </head>
@@ -196,9 +206,10 @@
         $(document).ready(function () {
 
             let imagePath;
+            let idProduct;
 
             $("#btn-hide-popup").on('click', function () {
-                $("#pop-up").addClass("hidden")
+                hiddePopUp()
             })
 
             var table = $('#example').DataTable({
@@ -216,7 +227,7 @@
                             // Periksa apakah data image tersedia
                             if (data) {
                                 // Buat tag image dengan src dari data image
-                                let image = `<img width="200px" src="./data/images/${data}" alt="${data}">`;
+                                let image = `<img src="./data/images/${data}" alt="${data}">`;
                                 return image;
                             } else {
                                 // Jika data image tidak tersedia, tampilkan placeholder
@@ -234,7 +245,7 @@
                             let hapus = `<button data-id="${row.id_product}" class="px-4 py-2 bg-red-300 rounded text-white hapus-button">Hapus</button>`;
 
                             // Buat tag anchor hapus
-                            let edit = `<button data-id="${row.image}" class="edit-button px-4 py-2 bg-green-300 rounded text-white">Edit</button>`;
+                            let edit = `<button data-id="${row.id_product}" data-src="${row.image}" class="edit-button px-4 py-2 bg-green-300 rounded text-white">Edit</button>`;
 
                             // Gabungkan tag anchor dalam wrapper flexbox
                             let menu = `<td class="flex flex-col">${anchorDetail}${hapus}${edit}</td>`;
@@ -291,38 +302,42 @@
             });
 
             $('#example tbody').on('click', '.edit-button', function () {
-                const image_src = $(this).attr('data-id');
+                idProduct = $(this).attr('data-id');
+                let image_src = $(this).attr('data-src');
                 imagePath = `./data/images/${image_src}`; // Ganti dengan path gambar produk yang sesuai
                 $("#pop-up").removeClass("hidden")
                 $('#editImage').attr('src', imagePath);
 
                 // Memunculkan pop-up edit saat tombol Edit diklik
-                $('#editImage').Jcrop({
-                    aspectRatio: 1,
-                    onSelect: updateCoords,
-                });
+                $('#editImage').Jcrop();
             });
-
-            function updateCoords(c) {
-                // Fungsi ini akan memberikan koordinat area yang dipilih
-                console.log('Selected Coordinates:', c);
-            }
 
             $('#cropAndSaveButton').on('click', function () {
                 const coords = $('#editImage').data('Jcrop').tellSelect();
-                cropAndSaveImage(coords, imagePath);
+                cropAndSaveImage(coords, imagePath, idProduct);
             });
 
-            function cropAndSaveImage(coords, imagePath) {
+            function hiddePopUp() {
+                imagePath = "";
+                idProduct = "";
+                const jcropApi = $("#editImage").data('Jcrop');
+                if (jcropApi) {
+                    jcropApi.destroy();
+                }
+                // $('#myImage').Jcrop().setSelect([0, 0, 0, 0]);
+                $("#pop-up").addClass("hidden")
+            }
+
+            function cropAndSaveImage(coords, imagePath, idProduct) {
                 // Implementasikan AJAX untuk mengirim koordinat ke server
                 console.log('Sending coordinates to server:', coords);
                 // Implementasikan AJAX di sini, contoh:
                 $.ajax({
                     url: 'crop.php',
                     type: 'POST',
-                    data: { coords, imagePath },
+                    data: { coords, imagePath, idProduct },
                     success: function (response) {
-                        if (response == "Image cropped and saved successfully") {
+                        if (response == "Image cropped, saved, and database updated successfully") {
                             // Refresh tabel
                             Swal.fire({
                                 toast: true,
@@ -338,7 +353,7 @@
                                 }
                             });
                             table.ajax.reload();
-                            $("#pop-up").addClass("hidden")
+                            hiddePopUp()
                         } else {
                             Swal.fire({
                                 toast: true,
@@ -353,6 +368,7 @@
                                     toast.onmouseleave = Swal.resumeTimer;
                                 }
                             });
+                            // hiddePopUp()
                         }
                     },
                     error: function (error) {
